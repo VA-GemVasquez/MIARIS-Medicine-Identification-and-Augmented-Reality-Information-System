@@ -32,7 +32,10 @@ export const ARDisplay: React.FC = () => {
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [activeOverlayTab, setActiveOverlayTab] = useState<'dosage' | 'precautions' | 'uses'>('dosage');
-  const [overlayExpanded, setOverlayExpanded] = useState<boolean>(true);
+  // On mobile screens, collapse overlay by default so it doesn't obstruct the camera view
+  const [overlayExpanded, setOverlayExpanded] = useState<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth >= 640 : true
+  );
 
   // Stop camera tracks cleanly
   const stopCamera = () => {
@@ -95,9 +98,15 @@ export const ARDisplay: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-10rem)] bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col justify-between">
+    <div
+      data-camera-viewport="true"
+      className="camera-container relative min-h-[460px] h-[calc(100dvh-12rem)] max-h-[700px] bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col justify-between"
+    >
       {/* 1. Camera Area */}
-      <div className="absolute inset-0 overflow-hidden flex items-center justify-center">
+      <div
+        data-camera-viewport="true"
+        className="camera-container absolute inset-0 overflow-hidden flex items-center justify-center"
+      >
         {/* Live Camera Video */}
         <video
           ref={videoRef}
@@ -126,8 +135,8 @@ export const ARDisplay: React.FC = () => {
           </div>
         )}
 
-        {/* 3D AR Spatial Bounding Box */}
-        <div className="relative z-10 w-64 h-64 sm:w-80 sm:h-80 border-2 border-teal-400/70 border-dashed rounded-3xl pointer-events-none flex items-center justify-center">
+        {/* 3D AR Spatial Bounding Box (compact and shifted up on mobile to avoid card overlap) */}
+        <div className="relative z-10 w-44 h-44 sm:w-72 sm:h-72 -translate-y-8 sm:translate-y-0 border-2 border-teal-400/70 border-dashed rounded-3xl pointer-events-none flex items-center justify-center">
           <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-[#0D9488] text-white text-[10px] font-bold rounded-md uppercase tracking-wider shadow-sm">
             Target Anchor Box
           </div>
@@ -138,14 +147,14 @@ export const ARDisplay: React.FC = () => {
       </div>
 
       {/* 2. Top HUD Bar: Close Button & Scan Status */}
-      <div className="relative z-20 p-4 sm:p-6 flex items-center justify-between pointer-events-auto bg-gradient-to-b from-black/70 to-transparent">
+      <div className="relative z-20 p-3 sm:p-6 flex items-center justify-between pointer-events-auto bg-gradient-to-b from-black/70 to-transparent">
         {/* Scan Status Badge */}
-        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-white text-xs">
+        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/10 text-white text-xs">
           <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
           <div>
-            <span className="font-bold text-slate-200">Scan Status: </span>
-            <span className="text-teal-300 font-mono text-[11px]">
-              {cameraActive ? 'Target Tracking Engine Standby' : 'Simulated View (No Camera)'}
+            <span className="font-bold text-slate-200 hidden sm:inline">Scan Status: </span>
+            <span className="text-teal-300 font-mono text-[10px] sm:text-[11px]">
+              {cameraActive ? 'Tracking Standby' : 'Simulated View'}
             </span>
           </div>
         </div>
@@ -153,7 +162,7 @@ export const ARDisplay: React.FC = () => {
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-xs font-bold rounded-xl backdrop-blur-md border border-white/20 transition-all shadow-md"
+          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-xs font-bold rounded-xl backdrop-blur-md border border-white/20 transition-all shadow-md"
           title="Exit AR View"
         >
           <X className="w-4 h-4" />
@@ -162,8 +171,8 @@ export const ARDisplay: React.FC = () => {
       </div>
 
       {/* 3. Medicine Information Overlay */}
-      <div className="relative z-20 p-4 sm:p-6 flex justify-center pointer-events-auto">
-        <div className="w-full max-w-lg bg-white/95 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/40 text-slate-900 space-y-3">
+      <div className="relative z-20 p-2 sm:p-6 pb-3 sm:pb-6 flex justify-center pointer-events-auto max-h-[55%] overflow-y-auto">
+        <div className="w-full max-w-lg bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-5 shadow-2xl border border-white/40 text-slate-900 space-y-2.5 sm:space-y-3">
           {/* Overlay Header */}
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
             <div>

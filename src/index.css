@@ -21,3 +21,30 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+
+/* --------------------------------------------------------------------------
+   Mobile Camera Viewport & GPU Video Containment Fix
+   Prevents MindAR and HTML5 <video>/<canvas> from escaping overflow:hidden
+   and overlapping mobile navigation, headers, and UI elements.
+   -------------------------------------------------------------------------- */
+.camera-container,
+[data-camera-viewport] {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  contain: paint !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  touch-action: manipulation;
+}
+
+.camera-container video,
+[data-camera-viewport] video,
+.camera-container canvas,
+[data-camera-viewport] canvas {
+  position: absolute !important;
+  max-width: none !important;
+  pointer-events: none;
+}
+

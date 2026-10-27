@@ -133,13 +133,16 @@ export const Scanner: React.FC = () => {
         fills the box. Never render React children inside this div while
         MindAR is running — only the overlay positioned on top of it.
       */}
-      <div className="relative w-full overflow-hidden rounded-3xl border-4 border-slate-800 shadow-2xl bg-slate-950"
-           style={{ aspectRatio: '16/9', minHeight: '280px' }}>
+      <div
+        data-camera-viewport="true"
+        className="camera-container relative w-full overflow-hidden rounded-3xl border-4 border-slate-800 shadow-2xl bg-slate-950 aspect-[3/4] sm:aspect-video min-h-[380px] sm:min-h-[440px] max-h-[72vh]"
+      >
 
         {/* MindAR mounts its video/canvas here */}
         <div
           ref={containerRef}
-          className="absolute inset-0 w-full h-full"
+          data-camera-viewport="true"
+          className="absolute inset-0 w-full h-full overflow-hidden"
           style={{ display: (isActive || isLoading) ? 'block' : 'none' }}
         />
 
@@ -215,34 +218,34 @@ export const Scanner: React.FC = () => {
 
         {/* ── Running: Scanning Reticle (no target yet) ── */}
         {isActive && !matchedMedicine && (
-          <div className="absolute inset-0 flex flex-col items-center justify-between p-10 pointer-events-none z-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-between p-4 sm:p-8 pointer-events-none z-10">
             <div className="w-full flex justify-between">
-              <div className="w-10 h-10 border-t-4 border-l-4 border-teal-400 rounded-tl-xl" />
-              <div className="w-10 h-10 border-t-4 border-r-4 border-teal-400 rounded-tr-xl" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 border-t-4 border-l-4 border-teal-400 rounded-tl-xl" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 border-t-4 border-r-4 border-teal-400 rounded-tr-xl" />
             </div>
             <div className="flex flex-col items-center gap-2">
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-teal-300/60 flex items-center justify-center">
-                <Scan className="w-7 h-7 text-teal-300/80" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-dashed border-teal-300/60 flex items-center justify-center">
+                <Scan className="w-6 h-6 sm:w-7 sm:h-7 text-teal-300/80" />
               </div>
-              <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[11px] font-semibold text-white">
+              <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] sm:text-[11px] font-semibold text-white text-center">
                 Align medicine packaging inside frame
               </span>
             </div>
             <div className="w-full flex justify-between">
-              <div className="w-10 h-10 border-b-4 border-l-4 border-teal-400 rounded-bl-xl" />
-              <div className="w-10 h-10 border-b-4 border-r-4 border-teal-400 rounded-br-xl" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 border-b-4 border-l-4 border-teal-400 rounded-bl-xl" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 border-b-4 border-r-4 border-teal-400 rounded-br-xl" />
             </div>
           </div>
         )}
 
         {/* ── Running: Detected — Unknown Target ─────── */}
         {isActive && detectedTarget && !detectedTarget.medicineId && (
-          <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-center pointer-events-auto">
-            <div className="bg-black/80 backdrop-blur-md rounded-xl px-4 py-3 flex items-center gap-3 text-xs text-white max-w-sm">
+          <div className="absolute bottom-3 sm:bottom-4 left-3 right-3 sm:left-4 sm:right-4 z-20 flex justify-center pointer-events-auto">
+            <div className="bg-black/80 backdrop-blur-md rounded-xl p-3 sm:px-4 sm:py-3 flex items-center gap-3 text-xs text-white max-w-sm">
               <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
               <div>
                 <p className="font-bold text-amber-300">Unregistered target detected</p>
-                <p className="text-slate-300">
+                <p className="text-slate-300 text-[11px]">
                   This packaging is not in the MIARIS target registry. Use manual search below.
                 </p>
               </div>
@@ -252,7 +255,7 @@ export const Scanner: React.FC = () => {
 
         {/* ── Running: Detected — Known Medicine Overlay ─ */}
         {isActive && matchedMedicine && (
-          <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-center pointer-events-auto">
+          <div className="absolute bottom-2 sm:bottom-4 left-2 right-2 sm:left-4 sm:right-4 z-30 flex justify-center pointer-events-auto max-h-[85%] overflow-y-auto">
             <AROverlayCard
               medicine={matchedMedicine}
               onDismiss={handleDismissOverlay}
@@ -260,19 +263,18 @@ export const Scanner: React.FC = () => {
           </div>
         )}
 
-        {/* Status bar */}
-        <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-slate-300 pointer-events-none z-10"
-             style={{ display: (isActive || isLoading) ? 'flex' : 'none' }}>
-          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-lg">
-            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-            <span className="font-mono capitalize">
-              {isActive ? 'MindAR Tracking' : 'Initialising…'}
+        {/* Status bar (hidden when card is showing to prevent collision) */}
+        {isActive && !matchedMedicine && (!detectedTarget || Boolean(detectedTarget.medicineId)) && (
+          <div className="absolute bottom-3 left-3 right-3 sm:left-4 sm:right-4 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 pointer-events-none z-10">
+            <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono capitalize">MindAR Tracking</span>
+            </div>
+            <span className="bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-lg font-mono hidden sm:inline-block">
+              Image Targets: /targets/targets.mind
             </span>
           </div>
-          <span className="bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-lg font-mono">
-            Image Targets: /targets/targets.mind
-          </span>
-        </div>
+        )}
       </div>
 
       {/* ── Scanning Tips ─────────────────────────────────────────── */}
